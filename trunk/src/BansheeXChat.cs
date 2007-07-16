@@ -58,7 +58,7 @@ namespace BansheeXChat
 				BusG.Init();
 				return true;
 			} catch(Exception) {
-				this.PrintLine("Banshee is not running");
+				this.Context.PrintLine("Banshee is not running");
 				//Environment.Exit(1);
 			}
 		}
@@ -90,7 +90,7 @@ namespace BansheeXChat
 		try {
 		    status = banshee.GetPlayingStatus();
 		} catch(Exception) {
-		    this.PrintLine("Lost connection to Banshee Server");
+		    this.Context.PrintLine("Lost connection to Banshee Server");
 		    return false;
 		}
 		
@@ -112,11 +112,11 @@ namespace BansheeXChat
 		      if(uri != last_uri) {
 		    last_uri = uri;
 		}
-		XChatNative.SendCommand(
+		this.Context.SendCommand(
 			string.Format("me is listening '{0}' - '{1}' (http://johansoft.blogspot.com/2007/07/x-chat-mono.html)", 
 				banshee.GetPlayingTitle(),
 				banshee.GetPlayingArtist(),
-				XChatNative.GetCurrentNickname()));  
+				this.Context.Nickname));  
 	       
 		return true;
 	    }
