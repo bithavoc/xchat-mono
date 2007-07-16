@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace XChat
 {
-	public static class XChatNative
+	internal static class XChatNative
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		public extern static void SendCommand(string commandText);

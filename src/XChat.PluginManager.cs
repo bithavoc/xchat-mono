@@ -82,6 +82,17 @@ namespace XChat
 		{
 			XChatNative.SendCommand(command);
 		}
+		public void PrintLine(string text)
+		{
+			XChatNative.PrintLine(text);
+		}
+		public string Nickname
+		{
+			get
+			{
+				return XChatNative.GetCurrentNickname();
+			}
+		}
 	}//ChatContext
 	
 	public abstract class PluginBase
@@ -153,10 +164,6 @@ namespace XChat
 			if(onCommandList.ContainsKey(name)) throw new Exception(string.Format("Command {0} already registered",name));
 				onCommandList.Add(name,callback);
 			XChatNative.RegisterCommand(name,description);
-		}
-		protected void PrintLine(string text)
-		{
-			XChatNative.PrintLine(text);
 		}
 	}//PluginBase
 	
