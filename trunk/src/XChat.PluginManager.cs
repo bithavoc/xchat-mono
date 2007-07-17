@@ -60,7 +60,10 @@ namespace XChat
 		public void LoadUserPlugins()
 		{
 			string homeDir = Environment.GetEnvironmentVariable("HOME");
-			string pluginDirName = ".config/xchat/mono/plugins/";
+			
+			FileInfo homeFile = new FileInfo(homeDir);
+			homeDir = homeFile.Directory.FullName;
+			string pluginDirName = "plugins/";
 			string pluginDirPath = Path.Combine(homeDir,pluginDirName);
 			Console.WriteLine("Plugin Idr path:{0}",pluginDirPath);
 			if(Directory.Exists(pluginDirPath ))
