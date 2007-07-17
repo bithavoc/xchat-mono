@@ -37,4 +37,4 @@ Copy your plugin into your Managed Plugin Directory.
 
 ^cp hello-plugin.dll $HOME/.config/xchat/mono/plugins/^
 
-Run your xchat-gnome!
+Run your xchat-gnome and write /hello!
