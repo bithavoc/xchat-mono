@@ -3,7 +3,7 @@
 
 = Introduction =
 
-This text help you to build your fist XChat Managed Plugin with C# and Mono 1.2.4. The plugin porpouse is register a command and return responses when the command is invoked.
+This text help you to build your fist XChat Managed Plugin with C# and Mono 1.2.4. The plugin purpose is register a command and return responses when the command is invoked.
 
 == The Source Code ==
 
