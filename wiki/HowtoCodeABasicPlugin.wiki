@@ -12,7 +12,7 @@ Create a file named basicHello.cs and fill the content with this code:
 {{{
 using XChat;
 
-[XChatPlugin("HelloPlugin","Hello Plugin Inteface")]
+[XChatPlugin("HelloPlugin","Hello Plugin Inteface",AutoActivate=true)]
 public class HelloPlugin : PluginBase
 {
         protected override void Init()
