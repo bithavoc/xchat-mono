@@ -1,4 +1,5 @@
 #summary How to code a basic plugin
+#labels Featured,Phase-Support
 
 = Introduction =
 
@@ -37,4 +38,3 @@ Copy your plugin into your Managed Plugin Directory.
 ^cp hello-plugin.dll $HOME/.config/xchat/mono/plugins/^
 
 Run your xchat-gnome!
-
