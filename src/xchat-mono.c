@@ -8,6 +8,7 @@
 #include <mono/metadata/mono-debug.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <stdlib.h>
 #define PNAME "MONO"
 #define PDESC "MONO CLR BASE";
 #define PVERSION "0.1"
@@ -87,7 +88,8 @@ void InitializeMono()
 		dom = mono_jit_init("Domain1");
 		mono_debug_init (MONO_DEBUG_FORMAT_MONO);
 		mono_debug_init_1 (dom);
-		masm = mono_domain_assembly_open(dom,"xchat-mono.dll");
+	
+		masm = mono_domain_assembly_open(dom,strcat(getenv("HOME"),"/.config/xchat/mono/xchat-mono.dll"));
 		if(!masm)
 		{
 			//printf("\tFailed\n");
