@@ -1,4 +1,5 @@
 all: xchat-mono.dll xchat-mono.so plugins
+
 xchat-mono.dll: XChat.XChatNative.cs XChat.PluginManager.cs
 	gmcs -target:library XChat.XChatNative.cs XChat.PluginManager.cs -out:xchat-mono.dll
 
@@ -30,5 +31,5 @@ clean:
 	rm *.so
 	rm *.dll
 
-run: install
+run:
 	xchat-gnome
