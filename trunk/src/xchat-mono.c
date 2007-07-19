@@ -73,15 +73,6 @@ static int join_cb(char *word[], void *userdata)
 	return XCHAT_EAT_NONE;  /* don't eat this event, xchat needs to see it! */
 }
 
-/*static int autooptoggle_cb(char *word[], char *word_eol[], void *userdata)
-{
-	
-	//printf("Word 0 = %s\n",);
-	//printf("%s\n",(char*)userdata);
-	
-	return XCHAT_EAT_ALL;  
-}*/
-
 void xchat_plugin_get_info(char **name, char **desc, char **version, void **reserved)
 {
 	*name = PNAME;
@@ -95,15 +86,12 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
                       char **plugin_version,
                       char *arg)
 {
-	//printf("Initiated\n");
 	ph = plugin_handle;
 
-	/* tell xchat our info */
 	*plugin_name = PNAME;
 	*plugin_desc = PDESC;
 	*plugin_version = PVERSION;
 
-	//xchat_hook_command(ph, "mono", XCHAT_PRI_NORM, autooptoggle_cb, "Usage: AUTOOPTOGGLE, Turns OFF/ON Auto Oping", "plugin:location");
 	xchat_hook_print(ph, "Join", XCHAT_PRI_NORM, join_cb, 0);
 	InitializeMono();
 	return 1;       /* return 1 for success */
@@ -120,7 +108,6 @@ void InitializeMono()
 		masm = mono_domain_assembly_open(dom,strcat(getenv("HOME"),"/.config/xchat/mono/xchat-mono.dll"));
 		if(!masm)
 		{
-			//printf("\tFailed\n");
 			printf("Can not open assembly");
 			exit(2);
 		}
@@ -139,46 +126,21 @@ void InitializeMono()
 		Init_XChat_PluginManager_Object();
 		MonoMethodDesc * desc;
 		
-		//if(!XChat_PluginManager_Object )printf("NO PLUGIN OBJECT LOCATED\n");
-		
 		desc = mono_method_desc_new ("XChat.XChatNative:OnJoin", TRUE);
-		//if(desc == NULL) printf("CAN NOT LOCATE DESC\n");
+
 		XChat_XChatNative_OnJoin_Method = mono_method_desc_search_in_image (desc, mimg);
-		//if(XChat_XChatNative_OnJoin_Method == NULL) printf("CAN NOT mono_method_desc_search_in_image DESC\n");
 		mono_method_desc_free (desc);
 		
 		desc = mono_method_desc_new ("XChat.XChatNative:OnCommand", TRUE);
 		XChat_XChatNative_OnCommand_Method = mono_method_desc_search_in_image (desc, mimg);
 		mono_method_desc_free (desc);
-	/*char *argv [2];
-
-	argv [0] = "";
-	argv [1] = NULL;*/
-	
-	//mono_jit_exec (dom, masm,1,argv);
-
 }
 void Init_XChat_PluginManager_Object()
 {
 		XChat_PluginManager_Object = mono_object_new(dom,XChat_PluginManager_Class);
 		MonoMethodDesc * desc;
 		desc = mono_method_desc_new ("XChat.PluginManager:.ctor", TRUE);
-		/*if(!desc) 
-		{
-			printf("CAN not locate CTORDESC\n");
-			exit(2);
-		}*/
-		
 		MonoMethod * ctorMethod = mono_method_desc_search_in_image (desc, mimg);
-		/*if(!ctorMethod) 
-		{
-			printf("CAN not locate CTOR INSTANCE\n");
-			exit(2);
-		}
-		else
-		{
-				printf("Instance\n");
-		}*/
 		mono_runtime_invoke (ctorMethod, XChat_PluginManager_Object, NULL, NULL);
 		mono_method_desc_free (desc);
 }
@@ -223,8 +185,6 @@ void XChat_XChatNative_OnJoin(char * nickName,char * channelName)
 
 int XChat_XChatNative_Command_GenericHook(char *word[], char *word_eol[], void *userdata)
 {
-	/*printf("Arg? %s\n",word[2]);
-	printf("Arg? %s\n",word[3]);*/
 	xchat_print(ph,word[2]);
 	if(XChat_XChatNative_OnCommand_Method == NULL) return XCHAT_EAT_NONE;
 	void *params [1];
