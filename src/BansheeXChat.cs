@@ -76,6 +76,11 @@ namespace BansheeXChat
     const string OBJECT_PATH = "/org/gnome/Banshee/Player";
 
  private static IPlayer banshee = null;
+	void resetBanshee()
+	{
+		banshee = null;
+		ensureBansheeConnection();
+	}
 	 bool ensureBansheeConnection()
 	{
 		if(banshee == null)
@@ -87,14 +92,13 @@ namespace BansheeXChat
 				return true;
 			} catch(Exception) {
 				this.Context.PrintLine("Banshee is not running");
-				//Environment.Exit(1);
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 	protected override void Init()
 	{
-		//Console.WriteLine("Banshee There");
 		this.RegisterCommand("banshee","Banshee Current Track",delegate
 		{
 			if(ensureBansheeConnection())
@@ -111,28 +115,22 @@ namespace BansheeXChat
 	}
 
 	private static string last_uri = null;
-	private bool QueryServer()
+	private void QueryServer()
 	    {
 		int status = -1;
 		
 		try {
 		    status = banshee.GetPlayingStatus();
 		} catch(Exception) {
-		    this.Context.PrintLine("Lost connection to Banshee Server");
-		    return false;
+		    this.Context.PrintLine("Lost connection to Banshee");
+			resetBanshee();
+		    return;
 		}
 		
 		switch(status) {
 		    case 0:
-			//myMonoClass.sayHello("Paused");
-			break;
-		    case 1:
-			//myMonoClass.sayHello("Playing");
-			break;
-		    case -1:
-		    default: 
-			//myMonoClass.sayHello("NO SONG LOADED");
-			return true;
+			this.Context.PrintLine("Banshee is paused");
+		    return;
 		}
 		
 		string uri = banshee.GetPlayingUri();
@@ -146,7 +144,7 @@ namespace BansheeXChat
 				banshee.GetPlayingArtist(),
 				this.Context.Nickname));  
 	       
-		return true;
+		return;
 	    }
 	}
 }
