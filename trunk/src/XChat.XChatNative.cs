@@ -47,6 +47,13 @@ namespace XChat
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		public extern static void RegisterCommand(string commandName,string commandDescription);
+
+		public delegate void onMessageHandler(string nickname,string message);
+		public static event onMessageHandler onMessage;
+		private static void OnMessage(string nickname,string message)//External call
+		{
+			if(onMessage != null) onMessage(nickname,message);
+		}
 		
 		public static void OnCommand(string commandName)
 		{
