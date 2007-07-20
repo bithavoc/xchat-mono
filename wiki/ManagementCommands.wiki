@@ -1,0 +1,13 @@
+#summary Management Commands for Mono Plugins
+#labels Featured,Phase-Support
+
+= mono-plugins-list =
+List all plugins loaded.
+
+Example:
+Write ^/mono-plugins-list^ in xchat will output:
+{{{
+ 2 plugins loaded
+ banshee(Activated)
+ MessageLoggin(Activated)
+}}}
