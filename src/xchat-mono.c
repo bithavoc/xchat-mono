@@ -64,7 +64,7 @@ MonoMethod * XChat_XChatNative_OnCommand_Method;
 MonoMethod * XChat_XChatNative_OnMessage_Method;
 
 // Common Functions.
-void Init_XChat_PluginManager_Object();
+void Init_XChat_PluginManager_Object(const char * baseDir);
 void InitializeMono();
 
 static int join_cb(char *word[], void *userdata)
@@ -96,24 +96,37 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
 
 	xchat_hook_print(ph, "Join", XCHAT_PRI_NORM, join_cb, 0);
 	xchat_hook_print(ph, "Channel Message", XCHAT_PRI_NORM, XChat_XChatNative_OnMessage, 0);
+	printf("Initializing Mono\n");
 	InitializeMono();
 	return 1;       /* return 1 for success */
 }
 
 void InitializeMono()
 {
-		mono_config_parse (NULL);
-		mono_set_dirs ("/usr/lib/",NULL);
-		dom = mono_jit_init("Domain1");
+	//printf("Getting Home dir\n");
+		const char *home = g_get_home_dir ();
+	//printf("Home dir done \n");
+	//printf("home = %s \n",home);
+	const char * base_path = g_build_path ("/", home, ".config", "xchat", "mono", NULL);
+		char * boot_assembly = g_build_path ("/",base_path,"xchat-mono.dll", NULL);
+	//printf("asm= %s \n",boot_assembly);
+		mono_config_parse (g_build_path ("/",base_path,"xchat-mono.dll.config", NULL));
+		
+		//mono_set_dirs ("/usr/lib/",NULL);
+		dom = mono_jit_init(boot_assembly);
+	//char * args[0];
+	//	mono_jit_exec (dom, boot_assembly, 0,NULL);
 		mono_debug_init (MONO_DEBUG_FORMAT_MONO);
 		mono_debug_init_1 (dom);
 	
-		masm = mono_domain_assembly_open(dom,strcat(getenv("HOME"),"/.config/xchat/mono/xchat-mono.dll"));
+		masm = mono_domain_assembly_open(dom,boot_assembly);
 		if(!masm)
 		{
-			printf("Can not open assembly");
+			printf("Can not open mono assembly");
 			exit(2);
 		}
+		
+		
 		mono_add_internal_call("XChat.XChatNative::SendCommand",XChat_XChatNative_SendCommand );	
 		mono_add_internal_call("XChat.XChatNative::GetCurrentChannelName",XChat_XChatNative_GetCurrentChannelName);	
 		mono_add_internal_call("XChat.XChatNative::GetCurrentNickname",XChat_XChatNative_GetCurrentNickname);	
@@ -121,12 +134,12 @@ void InitializeMono()
 		mono_add_internal_call("XChat.XChatNative::PrintLine",XChat_XChatNative_PrintLine);
 
 		mimg= mono_assembly_get_image  (masm);
-		
+
 		XChat_PluginManager_Class = mono_class_from_name (mimg,"XChat","PluginManager");
 		if(!XChat_PluginManager_Class )printf("NO PLUGIN MANAGER LOCATED\n");
 			
 		
-		Init_XChat_PluginManager_Object();
+		Init_XChat_PluginManager_Object(base_path);
 		MonoMethodDesc * desc;
 		
 		desc = mono_method_desc_new ("XChat.XChatNative:OnJoin", TRUE);
@@ -141,14 +154,17 @@ void InitializeMono()
 		desc = mono_method_desc_new ("XChat.XChatNative:OnMessage", TRUE);
 		XChat_XChatNative_OnMessage_Method = mono_method_desc_search_in_image (desc, mimg);
 		mono_method_desc_free (desc);
+		printf("Mono Initialized\n");
 }
-void Init_XChat_PluginManager_Object()
+void Init_XChat_PluginManager_Object(const char * base_path)
 {
 		XChat_PluginManager_Object = mono_object_new(dom,XChat_PluginManager_Class);
 		MonoMethodDesc * desc;
 		desc = mono_method_desc_new ("XChat.PluginManager:.ctor", TRUE);
 		MonoMethod * ctorMethod = mono_method_desc_search_in_image (desc, mimg);
-		mono_runtime_invoke (ctorMethod, XChat_PluginManager_Object, NULL, NULL);
+		void *params [1];
+		params[0] = mono_string_new(dom,base_path);
+		mono_runtime_invoke (ctorMethod, XChat_PluginManager_Object, params, NULL);
 		mono_method_desc_free (desc);
 }
 void XChat_XChatNative_SendCommand (MonoString * value) 
@@ -205,8 +221,9 @@ int XChat_XChatNative_Command_GenericHook(char *word[], char *word_eol[], void *
 {
 	xchat_print(ph,word[2]);
 	if(XChat_XChatNative_OnCommand_Method == NULL) return XCHAT_EAT_NONE;
-	void *params [1];
+	void *params [2];
 	params [0] = mono_string_new (dom, word[1]); //commandName
+	params [1] = mono_string_new (dom, word[2]); //arg1
 	mono_runtime_invoke (XChat_XChatNative_OnCommand_Method, NULL, params, NULL);
 	return XCHAT_EAT_ALL;
 }//XChat_XChatNative_Command_HookGeneric

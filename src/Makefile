@@ -12,7 +12,10 @@ xchat-mono-banshee.dll: xchat-mono.dll BansheeXChat.cs
 xchat-mono-loggin.dll: MessageLoginPlugin.cs xchat-mono.dll
 	gmcs -target:library MessageLoginPlugin.cs -r:xchat-mono.dll -out:xchat-mono-loggin.dll
 
-plugins: xchat-mono-banshee.dll xchat-mono-loggin.dll
+xchat-mono-translator.dll: TranslatorXChat.cs xchat-mono.dll
+	gmcs -target:library TranslatorXChat.cs -r:xchat-mono.dll -out:xchat-mono-translator.dll
+
+plugins: xchat-mono-banshee.dll xchat-mono-loggin.dll xchat-mono-translator.dll
 	
 
 install: all
@@ -30,10 +33,11 @@ install-cil: all
 install-plugins: all
 	cp xchat-mono-banshee.dll $(HOME)/.config/xchat/mono/plugins/xchat-mono-banshee.dll
 	cp xchat-mono-loggin.dll $(HOME)/.config/xchat/mono/plugins/xchat-mono-loggin.dll
+	cp xchat-mono-translator.dll $(HOME)/.config/xchat/mono/plugins/xchat-mono-translator.dll
 
 clean:
 	rm *.so
 	rm *.dll
 
-run:
+run: all
 	xchat-gnome
