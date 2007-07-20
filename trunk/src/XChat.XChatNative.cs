@@ -55,15 +55,25 @@ namespace XChat
 			if(onMessage != null) onMessage(nickname,message);
 		}
 		
-		public static void OnCommand(string commandName)
+		public static void OnCommand(string commandName,string arg1)
 		{
+			Console.WriteLine("Recibido arg1:{0}",arg1);
 			if(ExecutingCommand != null)
 			{
-				ExecutingCommand(commandName);
+				string[] args = null;
+				if(!string.IsNullOrEmpty(arg1))
+				{
+					args = new string[]{arg1};
+				}
+				else
+				{
+					args = new string[0];
+				}
+				ExecutingCommand(commandName,args);
 			}
 		}
 		
-		internal delegate void OnCommandCallback(string commandName);
+		internal delegate void OnCommandCallback(string commandName,string[] args);
 		internal static event OnCommandCallback ExecutingCommand;
 		
 		public static void OnJoin(string nickName,string channelName)

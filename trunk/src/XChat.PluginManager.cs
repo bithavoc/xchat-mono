@@ -28,6 +28,7 @@
  
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.IO;
 
@@ -37,13 +38,15 @@ namespace XChat
 	{
 		private Dictionary<string,PluginBase> plugins = new Dictionary<string,PluginBase>();
 		internal ChatContext context;
-
-		public PluginManager()
+		string baseDir;
+		public PluginManager(string baseDir)
 		{
+			this.baseDir = baseDir;
+			//Console.WriteLine("baseDir plugin maanger={0}",baseDir);
 			//Console.WriteLine("Plugin Manager Initialized");
 			this.context = new ChatContext();
 			XChatNative.RegisterCommand("mono-plugins-list","Show mono plugins list");
-			XChatNative.ExecutingCommand +=delegate(string name){
+			XChatNative.ExecutingCommand +=delegate(string name,string[] args){
 				if(name.Equals("mono-plugins-list"))
 				{
 					context.PrintLine("{0} plugins loaded",this.plugins.Count);
@@ -109,18 +112,18 @@ namespace XChat
 
 		public void LoadUserPlugins()
 		{
-			string homeDir = Environment.GetEnvironmentVariable("HOME");
+			//string homeDir = g_get_home_dir();//Environment.GetEnvironmentVariable("HOME");
 			
-			FileInfo homeFile = new FileInfo(homeDir);
-			homeDir = homeFile.Directory.FullName;
+			//FileInfo homeFile = new FileInfo(homeDir);
+			//homeDir = homeFile.Directory.FullName;
 			string pluginDirName = "plugins/";
-			string pluginDirPath = Path.Combine(homeDir,pluginDirName);
-			//Console.WriteLine("Plugin Idr path:{0}",pluginDirPath);
+			string pluginDirPath = Path.Combine(this.baseDir,pluginDirName);
+			Console.WriteLine("Plugin Idr path:{0}",pluginDirPath);
 			if(Directory.Exists(pluginDirPath ))
 			{
 				DirectoryInfo pluginDir = new DirectoryInfo(pluginDirPath);
 				FileInfo[] files = pluginDir.GetFiles("*.dll");
-				//Console.WriteLine("Pkugin files located count:{0}",files.Length);
+				Console.WriteLine("Pkugin files located count:{0}",files.Length);
 				foreach(FileInfo file in files)
 				{
 					LoadPluginFile(file.FullName);
@@ -146,7 +149,10 @@ namespace XChat
 		{
 			XChatNative.SendCommand(command);
 		}
-		
+		public void SendCommand(string format,params object[] args)
+		{
+			XChatNative.SendCommand(string.Format(format,args));
+		}
 		public void PrintLine(string text)
 		{
 			XChatNative.PrintLine(text);
@@ -196,16 +202,16 @@ namespace XChat
 		private PluginManager manager;
 		private bool isActivated;
 		private bool autoActivate;
-		private Dictionary<string,OnCommandEventHandler> onCommandList = new  Dictionary<string,OnCommandEventHandler>();
+		private Dictionary<string,CommandEventHandler> onCommandList = new  Dictionary<string,CommandEventHandler>();
 			private string id;
 		internal void _init(PluginManager manager)
 		{
 			this.manager = manager;
 			this.context = manager.context;
-			XChatNative.ExecutingCommand +=delegate(string name){
+			XChatNative.ExecutingCommand +=delegate(string name,string[] args){
 				if(this.onCommandList.ContainsKey(name))
 				{
-					onCommandList[name](name);//Execute the callback.
+					onCommandList[name](this,new CommandEventArgs(name,args));//Execute the callback.
 				}
 			};
 			Init();
@@ -264,9 +270,33 @@ namespace XChat
 				this.autoActivate = value;
 			}
 		}
+		public class CommandEventArgs
+		{
+			private string name;
+			private string[] args;
 
-		public delegate void OnCommandEventHandler(string commandName);
-		protected void RegisterCommand(string name,string description,OnCommandEventHandler callback)
+			public CommandEventArgs(string command,string[] args)
+			{
+				this.name = command;
+				this.args = args;
+			}
+			public string Name
+			{
+				get
+				{
+					return this.name;
+				}
+			}
+			public string[] Arguments
+			{
+				get
+				{
+					return this.args;
+				}
+			}
+		}
+		public delegate void CommandEventHandler(PluginBase plugin,CommandEventArgs e);
+		protected void RegisterCommand(string name,string description,CommandEventHandler callback)
 		{
 			if(callback == null)throw new Exception(string.Format("Command {0} can not be registered with a null callback",name));
 			if(onCommandList.ContainsKey(name)) throw new Exception(string.Format("Command {0} already registered",name));
