@@ -37,8 +37,8 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <stdlib.h>
-#define PNAME "MONO"
-#define PDESC "MONO CLR BASE";
+#define PNAME "Mono"
+#define PDESC "Mono Plugin Loader";
 #define PVERSION "0.1"
 
 static xchat_plugin *ph;   /* plugin handle */
@@ -54,12 +54,14 @@ void XChat_XChatNative_OnJoin(char * nickName,char * channelName);
 void XChat_XChatNative_RegisterCommand(MonoString * commandName,MonoString * commandDesc);
 int XChat_XChatNative_Command_GenericHook(char *word[], char *word_eol[], void *userdata);
 void XChat_XChatNative_PrintLine(MonoString * text);
+int XChat_XChatNative_OnMessage(char *word[], void *userdata);
 
 // CIL Method Descriptors
 MonoMethod * XChat_XChatNative_OnJoin_Method;
 MonoClass * XChat_PluginManager_Class;
 MonoObject * XChat_PluginManager_Object;
 MonoMethod * XChat_XChatNative_OnCommand_Method;
+MonoMethod * XChat_XChatNative_OnMessage_Method;
 
 // Common Functions.
 void Init_XChat_PluginManager_Object();
@@ -93,6 +95,7 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
 	*plugin_version = PVERSION;
 
 	xchat_hook_print(ph, "Join", XCHAT_PRI_NORM, join_cb, 0);
+	xchat_hook_print(ph, "Channel Message", XCHAT_PRI_NORM, XChat_XChatNative_OnMessage, 0);
 	InitializeMono();
 	return 1;       /* return 1 for success */
 }
@@ -134,6 +137,10 @@ void InitializeMono()
 		desc = mono_method_desc_new ("XChat.XChatNative:OnCommand", TRUE);
 		XChat_XChatNative_OnCommand_Method = mono_method_desc_search_in_image (desc, mimg);
 		mono_method_desc_free (desc);
+
+		desc = mono_method_desc_new ("XChat.XChatNative:OnMessage", TRUE);
+		XChat_XChatNative_OnMessage_Method = mono_method_desc_search_in_image (desc, mimg);
+		mono_method_desc_free (desc);
 }
 void Init_XChat_PluginManager_Object()
 {
@@ -172,6 +179,17 @@ void XChat_XChatNative_RegisterCommand(MonoString * commandName,MonoString * com
 		XChat_XChatNative_Command_GenericHook, 
 		mono_string_to_utf8(commandDesc), NULL);
 }//XChat_XChatNative_RegisterCommand
+
+int XChat_XChatNative_OnMessage(char *word[], void *userdata)
+{
+	if(!XChat_XChatNative_OnMessage_Method) return XCHAT_EAT_NONE;
+	void *params [1];
+	params[0] = mono_string_new(dom,word[1]);
+	params[1] = mono_string_new(dom,word[2]);
+
+	mono_runtime_invoke (XChat_XChatNative_OnMessage_Method, NULL, params, NULL);
+	return XCHAT_EAT_NONE;
+}//XChat_XChatNative_Command_HookGeneric
 
 void XChat_XChatNative_OnJoin(char * nickName,char * channelName)
 {

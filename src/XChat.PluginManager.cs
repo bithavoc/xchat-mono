@@ -37,12 +37,14 @@ namespace XChat
 	{
 		private Dictionary<string,PluginBase> plugins = new Dictionary<string,PluginBase>();
 		internal ChatContext context;
+
 		public PluginManager()
 		{
 			Console.WriteLine("Plugin Manager Initialized");
 			this.context = new ChatContext();
 			LoadUserPlugins();
 		}
+
 		public void RegisterPlugin(string id,PluginBase plugin)
 		{
 			//plugin.Init(this);
@@ -53,6 +55,7 @@ namespace XChat
 				Activate(id);
 			}
 		}
+
 		public void Activate(string pluginId)
 		{
 			//TODO: does the pluginId exists?
@@ -60,6 +63,7 @@ namespace XChat
 			p._init(this);
 			p.activate();
 		}
+
 		public void LoadPluginFile(string libraryPath)
 		{
 			Assembly asm = Assembly.LoadFile(libraryPath);
@@ -78,6 +82,7 @@ namespace XChat
 			}
 			types = null;
 		}//LoadPluginFile
+
 		public ChatContext Context
 		{
 			get
@@ -85,6 +90,7 @@ namespace XChat
 				return this.context;
 			}
 		}
+
 		public void LoadUserPlugins()
 		{
 			string homeDir = Environment.GetEnvironmentVariable("HOME");
@@ -104,19 +110,32 @@ namespace XChat
 					LoadPluginFile(file.FullName);
 				}
 			}
-		}
+		}//LoadUserPlugins
+
 	}//PluginManager
 	
 	public class ChatContext
 	{
+		public ChatContext()
+		{
+			XChatNative.onMessage +=delegate(string nickname,string message)
+			{
+				if(this.ChannelMessageReceived != null)
+				{
+					this.ChannelMessageReceived(this,new MessageReceivedEventArgs(nickname,message));
+				}
+			};
+		}
 		public void SendCommand(string command)
 		{
 			XChatNative.SendCommand(command);
 		}
+		
 		public void PrintLine(string text)
 		{
 			XChatNative.PrintLine(text);
 		}
+		
 		public string Nickname
 		{
 			get
@@ -124,8 +143,34 @@ namespace XChat
 				return XChatNative.GetCurrentNickname();
 			}
 		}
+		
+		public delegate void MessageReceivedEventHandler(ChatContext context,MessageReceivedEventArgs e);
+		public event MessageReceivedEventHandler ChannelMessageReceived;
+
 	}//ChatContext
-	
+	public class MessageReceivedEventArgs
+	{
+		private string nick,content;
+		public MessageReceivedEventArgs(string nickname,string content)
+		{
+			this.nick = nickname;
+			this.content = content;
+		}
+		public string SenderNickname
+		{
+			get
+			{
+				return this.nick;
+			}
+		}
+		public string Content
+		{
+			get
+			{
+				return this.content;
+			}
+		}
+	}
 	public abstract class PluginBase
 	{
 		private ChatContext context;
@@ -188,6 +233,7 @@ namespace XChat
 				this.autoActivate = value;
 			}
 		}
+
 		public delegate void OnCommandEventHandler(string commandName);
 		protected void RegisterCommand(string name,string description,OnCommandEventHandler callback)
 		{
@@ -196,6 +242,7 @@ namespace XChat
 				onCommandList.Add(name,callback);
 			XChatNative.RegisterCommand(name,description);
 		}
+
 	}//PluginBase
 	
 	[AttributeUsage(AttributeTargets.Class)]
