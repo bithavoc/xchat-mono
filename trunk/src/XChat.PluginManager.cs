@@ -40,7 +40,7 @@ namespace XChat
 
 		public PluginManager()
 		{
-			Console.WriteLine("Plugin Manager Initialized");
+			//Console.WriteLine("Plugin Manager Initialized");
 			this.context = new ChatContext();
 			XChatNative.RegisterCommand("mono-plugins-list","Show mono plugins list");
 			XChatNative.ExecutingCommand +=delegate(string name){
