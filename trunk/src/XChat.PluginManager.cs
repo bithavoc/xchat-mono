@@ -42,6 +42,21 @@ namespace XChat
 		{
 			Console.WriteLine("Plugin Manager Initialized");
 			this.context = new ChatContext();
+			XChatNative.RegisterCommand("mono-plugins-list","Show mono plugins list");
+			XChatNative.ExecutingCommand +=delegate(string name){
+				if(name.Equals("mono-plugins-list"))
+				{
+					context.PrintLine("{0} plugins loaded",this.plugins.Count);
+					if(this.plugins.Count > 0)
+					{
+						foreach(PluginBase plugin in this.plugins.Values)
+						{
+							context.PrintLine("{0}{1}",plugin.Id,plugin.IsActivated?"(Activated)":string.Empty);
+							
+						}//foreach
+					}//if
+				}
+			};
 			LoadUserPlugins();
 		}
 
@@ -76,7 +91,8 @@ namespace XChat
 					XChatPluginAttribute att = atts[0] as XChatPluginAttribute;
 					PluginBase pluginInstance = (PluginBase)Activator.CreateInstance(type,new Object[]{});
 					pluginInstance.AutoActivate = att.AutoActivate;
-					Console.WriteLine(att.Id);
+					pluginInstance.Id = att.Id;
+					//Console.WriteLine(att.Id);
 					this.RegisterPlugin(att.Id,pluginInstance);
 				}
 			}
@@ -99,12 +115,12 @@ namespace XChat
 			homeDir = homeFile.Directory.FullName;
 			string pluginDirName = "plugins/";
 			string pluginDirPath = Path.Combine(homeDir,pluginDirName);
-			Console.WriteLine("Plugin Idr path:{0}",pluginDirPath);
+			//Console.WriteLine("Plugin Idr path:{0}",pluginDirPath);
 			if(Directory.Exists(pluginDirPath ))
 			{
 				DirectoryInfo pluginDir = new DirectoryInfo(pluginDirPath);
 				FileInfo[] files = pluginDir.GetFiles("*.dll");
-				Console.WriteLine("Pkugin files located count:{0}",files.Length);
+				//Console.WriteLine("Pkugin files located count:{0}",files.Length);
 				foreach(FileInfo file in files)
 				{
 					LoadPluginFile(file.FullName);
@@ -135,7 +151,10 @@ namespace XChat
 		{
 			XChatNative.PrintLine(text);
 		}
-		
+		public void PrintLine(string format,params object[] args)
+		{
+			XChatNative.PrintLine(string.Format(format,args));
+		}
 		public string Nickname
 		{
 			get
@@ -178,6 +197,7 @@ namespace XChat
 		private bool isActivated;
 		private bool autoActivate;
 		private Dictionary<string,OnCommandEventHandler> onCommandList = new  Dictionary<string,OnCommandEventHandler>();
+			private string id;
 		internal void _init(PluginManager manager)
 		{
 			this.manager = manager;
@@ -200,6 +220,17 @@ namespace XChat
 		{
 			this.isActivated = false;
 		}*/
+		public string Id
+		{
+			get
+			{
+				return this.id;
+			}
+			internal set
+			{
+				this.id = value;
+			}
+		}
 		public ChatContext Context
 		{
 			get
