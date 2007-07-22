@@ -34,6 +34,7 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-debug.h>
+#include <mono/metadata/metadata.h>
 #include <stdlib.h>
 #include <glib.h>
 #include <stdlib.h>
@@ -41,10 +42,10 @@
 #define PDESC "Mono Plugin Loader";
 #define PVERSION "0.1"
 
-static xchat_plugin *ph;   /* plugin handle */
-static MonoDomain * dom ;
-static MonoAssembly *masm;
-static MonoImage  * mimg;
+xchat_plugin *ph;   /* plugin handle */
+MonoDomain * dom ;
+MonoAssembly *masm;
+MonoImage  * mimg;
 
 // CLI Internal Calls
 void XChat_XChatNative_SendCommand(MonoString *); 
@@ -103,29 +104,29 @@ int xchat_plugin_init(xchat_plugin *plugin_handle,
 
 void InitializeMono()
 {
-	//printf("Getting Home dir\n");
 		const char *home = g_get_home_dir ();
-	//printf("Home dir done \n");
-	//printf("home = %s \n",home);
+
 	const char * base_path = g_build_path ("/", home, ".config", "xchat", "mono", NULL);
 		char * boot_assembly = g_build_path ("/",base_path,"xchat-mono.dll", NULL);
-	//printf("asm= %s \n",boot_assembly);
-		mono_config_parse (g_build_path ("/",base_path,"xchat-mono.dll.config", NULL));
-		
-		//mono_set_dirs ("/usr/lib/",NULL);
-		dom = mono_jit_init(boot_assembly);
-	//char * args[0];
-	//	mono_jit_exec (dom, boot_assembly, 0,NULL);
-		mono_debug_init (MONO_DEBUG_FORMAT_MONO);
-		mono_debug_init_1 (dom);
+
+	//printf("boot assembly= %s",boot_assembly);	
 	
-		masm = mono_domain_assembly_open(dom,boot_assembly);
+	mono_config_parse ("/home/jhernandez/.config/xchat/mono/xchat-mono.dll.config");
+		dom = mono_jit_init(boot_assembly);
+
+
+	masm = mono_domain_assembly_open(dom,boot_assembly);
 		if(!masm)
 		{
 			printf("Can not open mono assembly");
 			exit(2);
 		}
 		
+			char *argv [1];
+		argv [0] = boot_assembly;
+		argv[1] = NULL;
+		mono_jit_exec (dom, masm, 1,argv);
+
 		
 		mono_add_internal_call("XChat.XChatNative::SendCommand",XChat_XChatNative_SendCommand );	
 		mono_add_internal_call("XChat.XChatNative::GetCurrentChannelName",XChat_XChatNative_GetCurrentChannelName);	
