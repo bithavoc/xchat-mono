@@ -1,7 +1,7 @@
 all: xchat-mono.dll xchat-mono.so plugins
 
 xchat-mono.dll: XChat.XChatNative.cs XChat.PluginManager.cs
-	gmcs -target:library XChat.XChatNative.cs XChat.PluginManager.cs -out:xchat-mono.dll
+	gmcs -target:exe XChat.XChatNative.cs XChat.PluginManager.cs -out:xchat-mono.dll
 
 xchat-mono.so: xchat-mono.c xchat-mono.dll
 	gcc -Wl,--export-dynamic -Wall -O1 -shared -fPIC xchat-mono.c `pkg-config --cflags --libs mono` -o xchat-mono.so
@@ -19,8 +19,6 @@ plugins: xchat-mono-banshee.dll xchat-mono-loggin.dll xchat-mono-translator.dll
 	
 
 install: all
-	-sudo rm /usr/lib/xchat-gnome/plugins/xchat-mono.so
-	-sudo rm /usr/lib/xchat-gnome/plugins/xchat-mono.dll
 	cp xchat-mono.so /usr/lib/xchat-gnome/plugins
 
 install-cil: all

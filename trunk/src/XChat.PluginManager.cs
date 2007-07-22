@@ -36,6 +36,10 @@ namespace XChat
 {
 	public class PluginManager
 	{
+		public static void Main()
+		{
+			
+		}
 		private Dictionary<string,PluginBase> plugins = new Dictionary<string,PluginBase>();
 		internal ChatContext context;
 		string baseDir;

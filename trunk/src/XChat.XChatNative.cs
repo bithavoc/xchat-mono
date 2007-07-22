@@ -57,7 +57,6 @@ namespace XChat
 		
 		public static void OnCommand(string commandName,string arg1)
 		{
-			Console.WriteLine("Recibido arg1:{0}",arg1);
 			if(ExecutingCommand != null)
 			{
 				string[] args = null;
