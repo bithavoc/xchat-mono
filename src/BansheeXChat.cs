@@ -90,7 +90,8 @@ namespace BansheeXChat
 				banshee = FindInstance();
 				BusG.Init();
 				return true;
-			} catch(Exception) {
+			} catch(Exception ex) {
+				Console.WriteLine(ex.ToString());
 				this.Context.PrintLine("Banshee is not running");
 				return false;
 			}

@@ -111,7 +111,7 @@ void InitializeMono()
 
 	//printf("boot assembly= %s",boot_assembly);	
 	
-	mono_config_parse ("/home/jhernandez/.config/xchat/mono/xchat-mono.dll.config");
+	mono_config_parse (NULL);
 		dom = mono_jit_init(boot_assembly);
 
 
