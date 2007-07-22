@@ -140,7 +140,7 @@ namespace BansheeXChat
 		    last_uri = uri;
 		}
 		this.Context.SendCommand(
-			string.Format("me is listening '{0}' - '{1}' (http://johansoft.blogspot.com/2007/07/x-chat-mono.html)", 
+			string.Format("me is listening '{0}' - '{1}' (xchat-mono Banshee Plugin)", 
 				banshee.GetPlayingTitle(),
 				banshee.GetPlayingArtist(),
 				this.Context.Nickname));  
